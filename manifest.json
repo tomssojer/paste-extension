@@ -3,7 +3,7 @@
   "name": "Paste Extension",
   "description": "Base Level Extension",
   "version": "1.0",
-  "permissions": ["activeTab", "scripting", "nativeMessaging"],
+  "permissions": ["commands", "storage"],
   "background": {
     "service_worker": "background.js"
   },
@@ -16,12 +16,12 @@
   "action": {
     "default_icon": "copypaste.png",
     "default_title": "Copy and paste",
-    "default_popup": "popup.html"
+    "default_popup": "popup/popup.html"
   },
   "commands": {
     "_execute_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Y"
+        "default": "Ctrl+Shift+V"
       },
       "description": "Open popup"
     }

@@ -1,19 +1,18 @@
-// chrome.action.onClicked.addListener((tab) => {
-//   chrome.scripting.executeScript({
-//     target: { tabId: tab.id },
-//     func: contentScriptFunc,
-//     args: ["action"],
-//   });
-// });
+let selectedText;
+const MAX_VALUES = 10;
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.text) {
-    sendResponse(request);
-  }
+chrome.runtime.onConnect.addListener((port) => {
+  port.onMessage.addListener((request) => {
+    if (request.message === "copy") {
+      chrome.storage.local.get(["copiedValues"]).then((result) => {
+        let copied = result.copiedValues || [];
+        copied.unshift(request.data);
 
-  return true;
-});
-
-chrome.commands.onCommand.addListener((command) => {
-  console.log(`Command: ${command}`);
+        if (copied.length > MAX_VALUES) {
+          copied.pop();
+        }
+        chrome.storage.local.set({ copiedValues: copied });
+      });
+    }
+  });
 });

@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   let listGroup = document.querySelector(".list-group");
   let allItems;
+  let allContent;
   let activeItemIndex;
 
   chrome.storage.local.get(["copiedValues"]).then((result) => {
@@ -9,8 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
       listItem.className = "list-group-item";
       let listItemHtml = `
         <div class="row">
-          <div class="col text-truncate">${result.copiedValues[i]}</div>
-          <div class="col-1">${i}</div>
+          <div class="col text-truncate content">${result.copiedValues[i]}</div>
+          <div class="col-auto number">${i}</div>
         </div>`;
       if (i == 0) {
         listItem.classList.add("active");
@@ -20,44 +21,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     allItems = document.querySelectorAll(".list-group-item");
+    allContent = document.querySelectorAll(".list-group-item .content");
   });
 
   document.addEventListener("keydown", (event) => {
+    searchActiveIndex();
+
     if (event.key == "Enter") {
-      allItems.forEach((item, index) => {
-        if (item.classList.contains("active")) {
-          activeItemIndex = index;
-        }
-
-        window.close();
-      });
-    }
-
-    allItems.forEach((item, index) => {
-      if (item.classList.contains("active")) {
-        activeItemIndex = index;
-      }
-    });
-
-    if (event.key === "ArrowDown" && activeItemIndex < allItems.length - 1) {
+      pasteToContentScript(allContent[activeItemIndex].innerText.trim());
+      window.close();
+    } else if (
+      event.key === "ArrowDown" &&
+      activeItemIndex < allItems.length - 1
+    ) {
       allItems[activeItemIndex].classList.remove("active");
       allItems[activeItemIndex + 1].classList.add("active");
     } else if (event.key === "ArrowUp" && activeItemIndex > 0) {
       allItems[activeItemIndex].classList.remove("active");
       allItems[activeItemIndex - 1].classList.add("active");
     }
+    if (Array.from("0123456789").includes(event.key)) {
+      window.close();
+    }
   });
 
   listGroup.addEventListener("click", () => {
-    allItems.forEach((item, index) => {
-      if (item.classList.contains("active")) {
-        activeItemIndex = index;
-      }
-    });
-
-    allItems[activeItemIndex].classList.remove("active");
-    document.activeElement.classList.add("active");
+    searchActiveIndex();
+    pasteToContentScript(allContent[activeItemIndex].innerText.trim());
 
     window.close();
   });
 });
+
+const searchActiveIndex = () => {
+  allItems.forEach((item, index) => {
+    if (item.classList.contains("active")) {
+      activeItemIndex = index;
+    }
+  });
+};
+
+const pasteToContentScript = (content) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, { message: "paste", data: content });
+  });
+};

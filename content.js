@@ -9,3 +9,10 @@ document.addEventListener("keydown", (event) => {
     }
   }
 });
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  focusedElement = document.activeElement;
+  if (request.message === "paste") {
+    focusedElement.value = request.data;
+  }
+});

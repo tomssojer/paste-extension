@@ -1,4 +1,3 @@
-let port = chrome.runtime.connect({ name: "background" });
 let focusedElement;
 
 const inputEvent = new Event("input", {
@@ -10,7 +9,7 @@ document.addEventListener("keydown", (event) => {
   if (event.ctrlKey && event.code === "KeyC") {
     let selectedText = window.getSelection().toString().trim();
     if (selectedText) {
-      port.postMessage({ message: "copy", data: selectedText });
+      chrome.runtime.sendMessage({ message: "copy", data: selectedText });
     }
   }
 });

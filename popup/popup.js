@@ -3,41 +3,44 @@ document.addEventListener("DOMContentLoaded", () => {
   let allItems, allContent, activeItemIndex;
 
   chrome.storage.local.get(["copiedValues"]).then((result) => {
-    if (result.copiedValues.length == 0) {
+    if (!result.copiedValues || result.copiedValues.length === 0) {
       let fallbackItem = document.createElement("div");
       fallbackItem.textContent = "No copied values stored.";
       listGroup.appendChild(fallbackItem);
-    }
+    } else {
+      for (let i = 0; i < result.copiedValues.length; i++) {
+        let listItem = document.createElement("a");
+        listItem.setAttribute("data-bs-toggle", "list");
+        listItem.className = "list-group-item list-group-item-action";
 
-    for (let i = 0; i < result.copiedValues.length; i++) {
-      let listItem = document.createElement("a");
-      listItem.setAttribute("data-bs-toggle", "list");
-      listItem.className = "list-group-item list-group-item-action";
+        let listItemHtml = `
+      <div class="row">
+      <div class="col text-truncate content"></div>
+      <div class="col-auto p-0" style="height: 35px;">
+      <img style="height: 100%;" src="../bootstrap/icons/${i}-square.svg" />
+      <img class="btn delete-item" style="height: 100%;" src="../bootstrap/icons/x-circle.svg" />
+      </div>
+      </div>`;
 
-      let listItemHtml = `
-        <div class="row">
-          <div class="col text-truncate content"></div>
-          <div class="col-auto p-0" style="height: 35px;">
-            <img style="height: 100%;" src="../bootstrap/icons/${i}-square.svg" />
-            <img class="btn delete-item" style="height: 100%;" src="../bootstrap/icons/x-circle.svg" />
-          </div>
-        </div>`;
+        if (i == 0) {
+          listItem.classList.add("active");
+        }
 
-      if (i == 0) {
-        listItem.classList.add("active");
+        listItem.innerHTML = listItemHtml;
+        let itemContent = listItem.querySelector(".content");
+        itemContent.textContent = result.copiedValues[i];
+        listGroup.appendChild(listItem);
       }
 
-      listItem.innerHTML = listItemHtml;
-      let itemContent = listItem.querySelector(".content");
-      itemContent.textContent = result.copiedValues[i];
-      listGroup.appendChild(listItem);
+      allItems = document.querySelectorAll(".list-group-item");
+      allContent = document.querySelectorAll(".list-group-item .content");
     }
-
-    allItems = document.querySelectorAll(".list-group-item");
-    allContent = document.querySelectorAll(".list-group-item .content");
   });
 
   document.addEventListener("keydown", (event) => {
+    if (!allItems) {
+      return;
+    }
     activeItemIndex = searchActiveIndex(allItems);
 
     if (event.key == "Enter") {
